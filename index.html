@@ -27,9 +27,20 @@
             --code-bg: #F0F0F5;
         }
 
-        /* Dark Mode */
+        /* Dark Mode (Manual Toggle) */
+        body.dark-mode {
+            --background: #000000;
+            --surface: #1C1C1E;
+            --surface-2: #2C2C2E;
+            --text: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --border: #38383A;
+            --code-bg: #1C1C1E;
+        }
+        
+        /* Dark Mode (System Preference) */
         @media (prefers-color-scheme: dark) {
-            :root {
+            body:not(.light-mode) {
                 --background: #000000;
                 --surface: #1C1C1E;
                 --surface-2: #2C2C2E;
@@ -59,7 +70,6 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Navigation */
         nav {
             position: fixed;
             top: 0;
@@ -72,8 +82,16 @@
             transition: background-color 0.3s, border-color 0.3s;
         }
 
+        /* Nav Dark Mode (Manual) */
+        body.dark-mode nav {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Nav Dark Mode (System) */
         @media (prefers-color-scheme: dark) {
-            nav {
+            body:not(.light-mode) nav {
                 background: rgba(0, 0, 0, 0.8);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
@@ -120,7 +138,6 @@
             color: var(--text);
         }
 
-        /* Theme Toggle Button */
         .theme-toggle {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -146,13 +163,17 @@
         .theme-toggle .sun { display: block; }
         .theme-toggle .moon { display: none; }
 
-        @media (prefers-color-scheme: dark) {
-            .theme-toggle .sun { display: none; }
-            .theme-toggle .moon { display: block; }
-        }
-
+        /* Theme Toggle Icons */
         body.dark-mode .theme-toggle .sun { display: none; }
         body.dark-mode .theme-toggle .moon { display: block; }
+        
+        body:not(.dark-mode) .theme-toggle .sun { display: block; }
+        body:not(.dark-mode) .theme-toggle .moon { display: none; }
+        
+        @media (prefers-color-scheme: dark) {
+            body:not(.light-mode) .theme-toggle .sun { display: none; }
+            body:not(.light-mode) .theme-toggle .moon { display: block; }
+        }
 
         .btn {
             display: inline-flex;
@@ -193,7 +214,6 @@
             font-size: 1.125rem;
         }
 
-        /* Hero Section */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -216,10 +236,9 @@
             pointer-events: none;
         }
 
-        @media (prefers-color-scheme: light) {
-            .hero::before {
-                background: radial-gradient(circle, rgba(0, 122, 255, 0.08) 0%, transparent 70%);
-            }
+        /* Hero Light Gradient */
+        body.light-mode .hero::before {
+            background: radial-gradient(circle, rgba(0, 122, 255, 0.08) 0%, transparent 70%);
         }
 
         .hero-content {
@@ -254,22 +273,20 @@
             margin-bottom: 1.5rem;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .hero h1 {
-                background: linear-gradient(135deg, #fff 0%, #fff 50%, var(--primary) 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
+        /* H1 Dark Mode (Manual) */
+        body.dark-mode .hero h1 {
+            background: linear-gradient(135deg, #fff 0%, #fff 50%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        @media (prefers-color-scheme: light) {
-            .hero h1 {
-                background: linear-gradient(135deg, #1D1D1F 0%, #1D1D1F 50%, var(--primary) 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
+        /* H1 Light Mode */
+        body:not(.dark-mode) .hero h1 {
+            background: linear-gradient(135deg, #1D1D1F 0%, #1D1D1F 50%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .hero p {
@@ -301,7 +318,6 @@
             color: var(--text-secondary);
         }
 
-        /* Features Section */
         .features {
             padding: 6rem 2rem;
             background: var(--surface);
@@ -350,10 +366,9 @@
             box-shadow: 0 12px 40px rgba(0, 122, 255, 0.15);
         }
 
-        @media (prefers-color-scheme: light) {
-            .feature-card:hover {
-                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-            }
+        /* Light Mode Shadow */
+        body:not(.dark-mode) .feature-card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
         }
 
         .feature-icon {
@@ -383,7 +398,6 @@
             color: var(--text-secondary);
         }
 
-        /* Formats Section */
         .formats {
             padding: 6rem 2rem;
             background: var(--surface);
@@ -441,7 +455,6 @@
             color: var(--primary);
         }
 
-        /* Code Block */
         .code-block {
             background: var(--code-bg);
             border: 1px solid var(--border);
@@ -461,11 +474,6 @@
             color: var(--accent);
         }
 
-        .code-block .string {
-            color: #7EE787;
-        }
-
-        /* CTA Section */
         .cta {
             padding: 8rem 2rem;
             text-align: center;
@@ -500,7 +508,6 @@
             margin-right: auto;
         }
 
-        /* Footer */
         footer {
             padding: 3rem 2rem;
             border-top: 1px solid var(--border);
@@ -538,7 +545,6 @@
             font-size: 0.875rem;
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
@@ -552,14 +558,8 @@
                 font-size: 1rem;
             }
 
-            .section-header h2 {
-                font-size: 2rem;
-            }
-
-            .formats h2 {
-                font-size: 2rem;
-            }
-
+            .section-header h2,
+            .formats h2,
             .cta h2 {
                 font-size: 2rem;
             }
@@ -567,7 +567,6 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav>
         <div class="nav-content">
             <a href="#" class="logo">
@@ -602,7 +601,6 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
             <div class="hero-badge">
@@ -650,7 +648,6 @@
         </div>
     </section>
 
-    <!-- Features Section -->
     <section class="features" id="features">
         <div class="section">
             <div class="section-header">
@@ -717,7 +714,6 @@
         </div>
     </section>
 
-    <!-- Formats Section -->
     <section class="formats" id="formats">
         <div class="section">
             <div class="formats-content">
@@ -759,7 +755,6 @@
         </div>
     </section>
 
-    <!-- Download Section -->
     <section class="cta" id="download">
         <div class="section">
             <h2>Get Started Today</h2>
@@ -775,7 +770,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-content">
             <div class="logo">
@@ -804,21 +798,27 @@
     </footer>
 
     <script>
-        // Theme toggle
         function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            if (document.body.classList.contains('dark-mode')) {
+                // Switch to light mode
+                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
+                localStorage.setItem('theme', 'light');
+            } else {
+                // Switch to dark mode
+                document.body.classList.remove('light-mode');
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+            }
         }
 
-        // Load saved theme
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-mode');
         } else if (savedTheme === 'light') {
-            document.body.classList.remove('dark-mode');
+            document.body.classList.add('light-mode');
         }
 
-        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -829,7 +829,6 @@
             });
         });
 
-        // Animate elements on scroll
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
