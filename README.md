@@ -1,139 +1,823 @@
-# DC42Studio
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC42Studio - Classic Mac Disk Utility</title>
+    <meta name="description" content="A powerful cross-platform tool for creating, converting, and browsing Classic Mac OS DC42 disk images.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #007AFF;
+            --primary-dark: #0056CC;
+            --secondary: #5856D6;
+            --accent: #FF9500;
+        }
 
-A powerful cross-platform tool for creating, converting, and browsing Classic Mac OS DC42 disk images.
+        /* Light Mode (Default) */
+        :root {
+            --background: #FFFFFF;
+            --surface: #F5F5F7;
+            --surface-2: #E8E8ED;
+            --text: #1D1D1F;
+            --text-secondary: #6E6E73;
+            --border: #D2D2D7;
+            --code-bg: #F0F0F5;
+        }
 
-![Platform](https://img.shields.io/badge/Platform-iOS%2015+-blue)
-![Platform](https://img.shields.io/badge/Platform-iPadOS%2015+-blue)
-![Platform](https://img.shields.io/badge/Platform-macOS%2012+-blue)
-![Swift](https://img.shields.io/badge/Swift-5.9-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #000000;
+                --surface: #1C1C1E;
+                --surface-2: #2C2C2E;
+                --text: #FFFFFF;
+                --text-secondary: #8E8E93;
+                --border: #38383A;
+                --code-bg: #1C1C1E;
+            }
+        }
 
-## Features
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-### 🎨 Create DC42 Images
-- Create DC42 disk images from folders
-- Set volume names and comments
-- Support for both data and resource forks
+        html {
+            scroll-behavior: smooth;
+        }
 
-### 🔄 Convert Formats
-- Import: DC42, ISO, DMG, IMG
-- Export: DC42, ISO, DMG, IMG, Folder
-- Batch conversion support
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-### 📁 Browse Contents
-- View HFS filesystem contents without extraction
-- Navigate folder structures
-- Extract individual files or entire volumes
-- Search within images
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: var(--background);
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
 
-### 📱 Universal App
-- iPhone, iPad, and Mac support
-- Native SwiftUI interface
-- Drag and drop support
-- Dark mode ready
+        @media (prefers-color-scheme: dark) {
+            nav {
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+        }
 
-## Requirements
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-- iOS 15.0+
-- iPadOS 15.0+
-- macOS 12.0+
-- Xcode 15.0+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+            color: var(--text);
+        }
 
-## Installation
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
 
-### From Source
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
 
-1. Clone the repository
-2. Open `project.yml` in Xcode (or run `xcodegen generate`)
-3. Select your target device
-4. Build and run
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
 
-### Using XcodeGen
+        .nav-links a:hover {
+            color: var(--text);
+        }
 
-```bash
-cd DC42Studio
-xcodegen generate
-open DC42Studio.xcodeproj
-```
+        .theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
 
-## DC42 Format
+        .theme-toggle:hover {
+            background: var(--surface-2);
+        }
 
-DC42 (DiskCopy 4.2) is a disk image format used by Classic Mac OS. It contains:
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text);
+        }
 
-- **Header (512 bytes)**: Volume info, format flags, checksum
-- **Data Fork**: File data
-- **Resource Fork**: Mac OS resources (icons, fonts, etc.)
+        .theme-toggle .sun { display: block; }
+        .theme-toggle .moon { display: none; }
 
-### Header Structure
+        @media (prefers-color-scheme: dark) {
+            .theme-toggle .sun { display: none; }
+            .theme-toggle .moon { display: block; }
+        }
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0 | 4 | Magic ("CD42") |
-| 4 | 2 | Version |
-| 6 | 64 | Volume Name |
-| 70 | 8 | Image Size |
-| 78 | 8 | Media Size |
-| 86 | 4 | Format Flags |
-| 90 | 4 | Checksum |
-| 94 | 128 | Comment |
-| 222 | 8 | Data Fork Offset |
-| 230 | 8 | Resource Fork Offset |
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
 
-## Architecture
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
 
-```
-DC42Studio/
-├── Sources/
-│   ├── App/           # App entry point
-│   ├── Models/        # Data models (DC42Image, HFSNode)
-│   ├── Services/      # DC42Service, HFSService
-│   ├── ViewModels/    # MVVM ViewModels
-│   └── Views/         # SwiftUI Views
-├── Resources/         # Assets, Info.plist
-└── project.yml        # XcodeGen configuration
-```
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
 
-## Usage
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
 
-### Creating an Image
+        .btn-secondary:hover {
+            background: var(--surface-2);
+        }
 
-1. Open DC42Studio
-2. Go to the "Create" tab
-3. Drop a folder or click to browse
-4. Set volume name and options
-5. Tap "Create"
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+        }
 
-### Converting an Image
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
 
-1. Open DC42Studio
-2. Drag a DC42 file to the converter
-3. Select output format
-4. Tap "Convert"
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 122, 255, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
 
-### Browsing Contents
+        @media (prefers-color-scheme: light) {
+            .hero::before {
+                background: radial-gradient(circle, rgba(0, 122, 255, 0.08) 0%, transparent 70%);
+            }
+        }
 
-1. Open a DC42 image
-2. Tap "Browse" to view contents
-3. Navigate folders
-4. Tap a file to preview
-5. Long-press to select and extract
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            position: relative;
+            z-index: 1;
+        }
 
-## Contributing
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+        .hero-badge span {
+            color: var(--accent);
+        }
 
-## License
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+        @media (prefers-color-scheme: dark) {
+            .hero h1 {
+                background: linear-gradient(135deg, #fff 0%, #fff 50%, var(--primary) 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+        }
 
-## Acknowledgments
+        @media (prefers-color-scheme: light) {
+            .hero h1 {
+                background: linear-gradient(135deg, #1D1D1F 0%, #1D1D1F 50%, var(--primary) 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+        }
 
-- Classic Mac OS community
-- Apple Developer Documentation
-- SF Symbols for icons
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
 
-## Contact
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
 
-- Website: https://dc42studio.app
-- GitHub: https://github.com/dc42studio
-- Discord: https://discord.gg/dc42studio
+        .platforms {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .platform {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .features {
+            padding: 6rem 2rem;
+            background: var(--surface);
+            transition: background-color 0.3s;
+        }
+
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s, background-color 0.3s, border-color 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 122, 255, 0.15);
+        }
+
+        @media (prefers-color-scheme: light) {
+            .feature-card:hover {
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+
+        .formats {
+            padding: 6rem 2rem;
+            background: var(--surface);
+            transition: background-color 0.3s;
+        }
+
+        .formats-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .formats-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .formats h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .formats > .section > .formats-content > div:first-child > p {
+            color: var(--text-secondary);
+            margin: 1rem 0 2rem;
+            font-size: 1.125rem;
+        }
+
+        .format-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .format-tag {
+            padding: 0.75rem 1.25rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .format-tag svg {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .code-block .comment {
+            color: var(--text-secondary);
+        }
+
+        .code-block .command {
+            color: var(--accent);
+        }
+
+        .cta {
+            padding: 8rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 149, 0, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .cta p {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        footer {
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text);
+        }
+
+        .copyright {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-header h2,
+            .formats h2,
+            .cta h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-content">
+            <a href="#" class="logo">
+                <svg viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                    <path d="M8 12h16M8 16h12M8 20h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                            <stop stop-color="#007AFF"/>
+                            <stop offset="1" stop-color="#5856D6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                DC42Studio
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#formats">Formats</a></li>
+                <li><a href="#download">Download</a></li>
+                <li><a href="https://github.com/jin2005-issues/Mac-DC42" target="_blank">GitHub</a></li>
+            </ul>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                </svg>
+            </button>
+            <a href="#download" class="btn btn-primary">Get Started</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0L10 6H16L11 10L13 16L8 12L3 16L5 10L0 6H6L8 0Z"/>
+                </svg>
+                <span>v1.1.0 Released</span> • Classic Mac Made Easy
+            </div>
+            <h1>DC42Studio</h1>
+            <p>The powerful cross-platform tool for creating, converting, and browsing Classic Mac OS DC42 disk images.</p>
+            <div class="hero-buttons">
+                <a href="#download" class="btn btn-primary btn-large">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 0a10 10 0 100 20 10 10 0 000-20zm-2 13l-5-5h3V4h4v4h3l-5 5z"/>
+                    </svg>
+                    Download
+                </a>
+                <a href="https://github.com/jin2005-issues/Mac-DC42" target="_blank" class="btn btn-secondary btn-large">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V19c0 .27.16.59.67.5C17.14 18.16 20 14.42 20 10A10 10 0 0010 0z"/>
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+            <div class="platforms">
+                <div class="platform">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    iOS 15+
+                </div>
+                <div class="platform">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    iPadOS 15+
+                </div>
+                <div class="platform">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    macOS 12+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section">
+            <div class="section-header">
+                <h2>Everything You Need</h2>
+                <p>Powerful features for working with Classic Mac disk images</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                    </div>
+                    <h3>Create DC42 Images</h3>
+                    <p>Create DC42 disk images from folders with full support for data and resource forks.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 12h16M4 6h16M4 18h10"/>
+                        </svg>
+                    </div>
+                    <h3>Convert Formats</h3>
+                    <p>Convert between DC42, ISO, DMG, IMG formats with a single click.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                        </svg>
+                    </div>
+                    <h3>Browse Contents</h3>
+                    <p>View HFS filesystem contents without extraction. Navigate folders and preview files.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                    </div>
+                    <h3>Extract Files</h3>
+                    <p>Extract individual files or entire volumes to your Mac, iPhone, or iPad.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2"/>
+                            <path d="M8 21h8M12 17v4"/>
+                        </svg>
+                    </div>
+                    <h3>Universal App</h3>
+                    <p>One app for all your devices. iPhone, iPad, and Mac with native experience.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h3>Open Source</h3>
+                    <p>Free and open source. Built with Swift and SwiftUI for the community.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="formats" id="formats">
+        <div class="section">
+            <div class="formats-content">
+                <div>
+                    <h2>Wide Format Support</h2>
+                    <p>DC42Studio supports all major disk image formats used by Classic Mac OS and modern systems.</p>
+                    <div class="format-list">
+                        <div class="format-tag">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                            DC42
+                        </div>
+                        <div class="format-tag">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/></svg>
+                            ISO
+                        </div>
+                        <div class="format-tag">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                            DMG
+                        </div>
+                        <div class="format-tag">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                            IMG
+                        </div>
+                        <div class="format-tag">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            Folder
+                        </div>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <span class="comment"># Clone v1.1.0</span><br>
+                    <span class="command">git clone</span> -b v1.1.0 https://github.com/jin2005-issues/Mac-DC42<br><br>
+                    <span class="comment"># Generate Xcode project</span><br>
+                    <span class="command">xcodegen generate</span><br><br>
+                    <span class="comment"># Open in Xcode</span><br>
+                    <span class="command">open</span> DC42Studio.xcodeproj
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta" id="download">
+        <div class="section">
+            <h2>Get Started Today</h2>
+            <p>Download DC42Studio v1.1.0 and start working with Classic Mac disk images.</p>
+            <div class="hero-buttons">
+                <a href="https://github.com/jin2005-issues/Mac-DC42/releases/tag/v1.1.0" target="_blank" class="btn btn-primary btn-large">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M20 10l-8-8v5H4v6h8v5l8-8z"/>
+                    </svg>
+                    Download v1.1.0
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#gradient2)"/>
+                    <path d="M8 12h16M8 16h12M8 20h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="gradient2" x1="0" y1="0" x2="32" y2="32">
+                            <stop stop-color="#007AFF"/>
+                            <stop offset="1" stop-color="#5856D6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                DC42Studio
+            </div>
+            <ul class="footer-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#formats">Formats</a></li>
+                <li><a href="https://github.com/jin2005-issues/Mac-DC42" target="_blank">GitHub</a></li>
+                <li><a href="https://github.com/jin2005-issues/Mac-DC42/issues" target="_blank">Support</a></li>
+            </ul>
+            <div class="copyright">
+                © 2025 DC42Studio. Open source under MIT License.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+        } else if (savedTheme === 'light') {
+            document.body.classList.remove('dark-mode');
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
