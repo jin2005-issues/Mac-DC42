@@ -1,0 +1,50 @@
+# Xcode
+*.xcodeproj
+*.xcworkspace
+!project.xcworkspace.sample
+.DS_Store
+xcuserdata/
+*.moved-aside
+
+# Swift Package Manager
+.build/
+Packages/
+*.xcodeproj
+
+# CocoaPods
+*.xcworkspace
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Build outputs
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.AppleDouble
+.LSOverride
+Thumbs.db
