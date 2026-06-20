@@ -52,6 +52,8 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: DC42Studio
         INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: true
         INFOPLIST_KEY_UIFileSharingEnabled: true
+        SWIFT_INCLUDE_PATHS: "$(SDKROOT)/usr/include"
+        OTHER_LDFLAGS: "-lz"
 
   DC42Studio-macOS:
     type: application
@@ -73,6 +75,7 @@ targets:
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2025 DC42Studio. All rights reserved."
         COMBINE_HIDPI_IMAGES: true
         LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+        OTHER_LDFLAGS: "-lz"
 
 schemes:
   DC42Studio:
